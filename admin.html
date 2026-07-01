@@ -757,8 +757,80 @@ function stopAdminCam() {
   document.getElementById('cam-preview').style.display = 'none';
 }
 
+async function installDefaultFrames() {
+  const all = await fbAll();
+  const frames = all.filter(f => f.id.startsWith('frame_'));
+  if (frames.length > 0) return;
+
+  toast('Đang cấu hình các khung hình mặc định từ thư mục Frame...');
+
+  const defaultStrips = [
+    { name: 'Strip 1 (Classic)', path: 'Frame/STRIP/1.png' },
+    { name: 'Strip 2 (Retro)', path: 'Frame/STRIP/2.png' },
+    { name: 'Strip 3 (Youth)', path: 'Frame/STRIP/3.png' }
+  ];
+
+  const defaultGrids = [
+    { name: 'Grid 1 (Standard)', path: 'Frame/GRID/1.png' },
+    { name: 'Grid 2 (Classic)', path: 'Frame/GRID/2.png' },
+    { name: 'Grid 3 (Cozy)', path: 'Frame/GRID/3.png' },
+    { name: 'Grid 4 (Memory)', path: 'Frame/GRID/4.png' },
+    { name: 'Grid 5 (Warmth)', path: 'Frame/GRID/5.png' },
+    { name: 'Grid 6 (Vintage)', path: 'Frame/GRID/6.png' }
+  ];
+
+  const fetchAsDataURL = async (path) => {
+    const res = await fetch(path);
+    if (!res.ok) throw new Error(`Could not fetch ${path}`);
+    const blob = await res.blob();
+    return new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  let count = 0;
+  for (let i = 0; i < defaultStrips.length; i++) {
+    try {
+      const item = defaultStrips[i];
+      const dataURL = await fetchAsDataURL(item.path);
+      const thumb = await makeThumbnail(dataURL);
+      const slotCount = await detectSlotCount(dataURL);
+      const id = `frame_default_strip_${i+1}`;
+      await fbPut({ id, name: item.name, dataURL, thumb, slotCount, layoutType: 'strip', uploadedAt: Date.now() });
+      count++;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  for (let i = 0; i < defaultGrids.length; i++) {
+    try {
+      const item = defaultGrids[i];
+      const dataURL = await fetchAsDataURL(item.path);
+      const thumb = await makeThumbnail(dataURL);
+      const slotCount = await detectSlotCount(dataURL);
+      const id = `frame_default_grid_${i+1}`;
+      await fbPut({ id, name: item.name, dataURL, thumb, slotCount, layoutType: 'grid', uploadedAt: Date.now() });
+      count++;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  if (count > 0) {
+    toast(`✓ Đã tự động cài đặt ${count} khung hình mặc định!`);
+  }
+}
+
 async function initFrames() {
   await openFbDB();
+  try {
+    await installDefaultFrames();
+  } catch (e) {
+    console.error('Lỗi khi cài đặt frame mặc định:', e);
+  }
   selectedGridIds  = [];
   selectedStripIds = [];
   activeWmId = localStorage.getItem('pb_watermark_id') || null;
