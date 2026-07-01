@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Photobooth · Quán của Thời Thanh Xuân</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --g1:#1B4332;--g2:#2D6A4F;--g3:#52B788;
+      --bg:#EDEAE3;--gold:#C9963A;--cream:#F5F0E8;
+    }
+    html,body{
+      width:100%;height:100%;background:#0a0a0a;
+      font-family:'Montserrat',sans-serif;
+      overflow:hidden;-webkit-user-select:none;user-select:none;touch-action:none;
+      overscroll-behavior:none;
+    }
+    .screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center}
+    .screen.active{display:flex}
+
+    /* ══ HOME ══════════════════════════════ */
+    #screen-home{background:var(--bg)}
+    .blob{position:absolute;border-radius:50%;pointer-events:none}
+    .blob-1{width:380px;height:380px;top:-120px;left:-120px;background:radial-gradient(circle,rgba(82,183,136,.18) 0%,transparent 70%)}
+    .blob-2{width:460px;height:460px;bottom:-140px;right:-140px;background:radial-gradient(circle,rgba(201,150,58,.12) 0%,transparent 70%)}
+    .home-inner{position:relative;text-align:center;display:flex;flex-direction:column;align-items:center}
+    .logo-ring{width:70px;height:70px;border:2px solid var(--g1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:22px;color:var(--g1);font-size:24px;opacity:.85}
+    .brand-name{font-size:clamp(22px,3.8vw,42px);font-weight:600;color:var(--g1);line-height:1.28;margin-bottom:8px}
+    .brand-loc{font-size:13px;font-weight:300;color:var(--gold);letter-spacing:5px;text-transform:uppercase;margin-bottom:44px}
+    .hr{width:52px;height:1px;background:var(--g1);opacity:.25;margin-bottom:36px}
+    .choose-label{font-size:12px;font-weight:500;color:var(--g1);letter-spacing:2.5px;text-transform:uppercase;opacity:.55;margin-bottom:18px}
+
+    /* Layout option grid */
+    .layout-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:44px}
+    .lopt{background:transparent;border:2px solid rgba(27,67,50,.2);border-radius:16px;padding:14px 10px 12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;transition:all .22s;color:var(--g1);-webkit-tap-highlight-color:transparent;width:120px}
+    .lopt:hover{border-color:var(--g2);background:rgba(27,67,50,.06)}
+    .lopt.sel{background:var(--g1);border-color:var(--g1);color:white}
+    .lopt-icon{display:grid;gap:3px;padding:4px;border-radius:6px;background:rgba(27,67,50,.1);width:52px;height:58px}
+    .lopt.sel .lopt-icon{background:rgba(255,255,255,.18)}
+    .lopt-icon.g21{grid-template-columns:1fr 1fr;grid-template-rows:1fr}
+    .lopt-icon.g22{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+    .lopt-icon.g23{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr 1fr}
+    .lopt-icon.s12{grid-template-columns:1fr;grid-template-rows:repeat(2,1fr)}
+    .lopt-icon.s13{grid-template-columns:1fr;grid-template-rows:repeat(3,1fr)}
+    .lopt-icon.s14{grid-template-columns:1fr;grid-template-rows:repeat(4,1fr)}
+    .lopt-icon.s16{grid-template-columns:1fr;grid-template-rows:repeat(6,1fr)}
+    .lopt-icon span{border-radius:2px;background:rgba(27,67,50,.3)}
+    .lopt.sel .lopt-icon span{background:rgba(255,255,255,.5)}
+    .lopt-txt{font-size:11px;font-weight:500;letter-spacing:.5px}
+
+    .start-btn{padding:16px 60px;background:var(--g1);color:var(--cream);border:none;border-radius:100px;font-family:inherit;font-size:17px;font-weight:500;cursor:pointer;transition:all .22s;-webkit-tap-highlight-color:transparent}
+    .start-btn:hover{background:var(--g2);transform:scale(1.03)}
+    .home-foot{position:absolute;bottom:28px;font-size:12px;color:var(--g1);opacity:.3;letter-spacing:1px}
+
+    /* ══ PICK ══════════════════════════════ */
+    #screen-pick{background:#0a0a0a;justify-content:flex-end;padding:0}
+    #pick-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);transition:filter .3s ease}
+    .cam-portrait{transform:rotate(-90deg) scaleX(-1) !important;width:100vh !important;height:100vw !important;top:50% !important;left:50% !important;right:auto !important;bottom:auto !important;margin-top:-50vw !important;margin-left:-50vh !important;transform-origin:center center !important}
+    .pick-panel{position:relative;z-index:2;width:100%;background:rgba(8,22,13,.7);backdrop-filter:blur(26px) saturate(1.4);-webkit-backdrop-filter:blur(26px) saturate(1.4);border-top:1px solid rgba(255,255,255,.09);border-radius:26px 26px 0 0;padding:16px 20px 40px;display:flex;flex-direction:column;align-items:center;gap:11px;max-height:60vh;overflow-y:auto}
+    .panel-handle{width:44px;height:4px;border-radius:2px;background:rgba(255,255,255,.22);flex-shrink:0;margin-bottom:2px}
+    .pick-label{font-size:11px;font-weight:600;color:rgba(255,255,255,.45);letter-spacing:2.5px;text-transform:uppercase;flex-shrink:0}
+    .pick-label-row{display:flex;justify-content:space-between;align-items:center;width:100%;flex-shrink:0}
+    .rotate-cam-btn{display:flex;align-items:center;gap:5px;padding:5px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;color:rgba(255,255,255,.7);font-family:inherit;font-size:11px;font-weight:500;cursor:pointer;transition:.2s;-webkit-tap-highlight-color:transparent}
+    .rotate-cam-btn:hover{background:rgba(255,255,255,.2);color:white}
+    .rotate-cam-btn svg{width:13px;height:13px;flex-shrink:0}
+
+    /* Frame cards */
+    .frame-grid{display:flex;gap:10px;width:100%;flex-shrink:0;overflow-x:auto;padding-bottom:4px;scroll-snap-type:x mandatory}
+    .frame-grid::-webkit-scrollbar{display:none}
+    .frame-card{background:transparent;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:7px;-webkit-tap-highlight-color:transparent;flex-shrink:0;scroll-snap-align:start}
+    .fc-inner{width:84px;height:118px;border-radius:10px;display:flex;flex-direction:column;padding:8px 7px 7px;gap:3px;position:relative;transition:box-shadow .22s,transform .22s}
+    .frame-card.sel .fc-inner{box-shadow:0 0 0 3px white,0 0 0 5px rgba(255,255,255,.2);transform:translateY(-3px)}
+    .fc-classic{background:#EDEAE3;border:2px solid #1B4332}
+    .fc-film{background:#181818;border:1.5px solid #444}
+    .fc-blush{background:#FDF0EC;border:2px solid #C9847A}
+    .fc-sage{background:#EEF6F1;border:2px solid #2D6A4F}
+    .fc-plum{background:#FBF0F2;border:2px solid #7A1A2E}
+    .fc-top{text-align:center;font-size:6px;font-weight:700;letter-spacing:1px;text-transform:uppercase;flex-shrink:0}
+    .fc-classic .fc-top{color:#1B4332} .fc-film .fc-top{color:rgba(255,255,255,.5);font-family:monospace} .fc-blush .fc-top{color:#8B4A44} .fc-sage .fc-top{color:#1B4332} .fc-plum .fc-top{color:#7A1A2E}
+    .fc-photos{display:grid;grid-template-columns:1fr 1fr;gap:3px;flex:1}
+    .fc-ph{border-radius:2px}
+    .fc-classic .fc-ph{background:rgba(27,67,50,.16)} .fc-film .fc-ph{background:rgba(255,255,255,.14)} .fc-blush .fc-ph{background:rgba(201,132,122,.2)} .fc-sage .fc-ph{background:rgba(45,106,79,.16)} .fc-plum .fc-ph{background:rgba(122,26,46,.14)}
+    .fc-bot{text-align:center;font-size:5.5px;font-style:italic;opacity:.6;flex-shrink:0}
+    .fc-classic .fc-bot,.fc-sage .fc-bot{color:#1B4332} .fc-film .fc-bot{color:rgba(255,255,255,.4)} .fc-blush .fc-bot{color:#8B4A44} .fc-plum .fc-bot{color:#7A1A2E}
+    .fc-perfs{display:flex;gap:3px;justify-content:center;flex-shrink:0;height:7px;align-items:center}
+    .fc-perfs span{display:block;width:7px;height:4.5px;border-radius:1px;background:rgba(255,255,255,.1)}
+    .fc-deco{position:absolute;font-size:9px;opacity:.45}
+    .fc-deco-tl{top:3px;left:3px} .fc-deco-br{bottom:3px;right:3px}
+    .fc-leaf-br{transform:rotate(180deg)}
+    .fc-diamond{position:absolute;width:8px;height:8px;border:1.5px solid #7A1A2E;opacity:.5;transform:rotate(45deg)}
+    .fc-diamond-tl{top:4px;left:4px} .fc-diamond-br{bottom:4px;right:4px}
+    .fc-check{position:absolute;top:4px;right:5px;width:16px;height:16px;border-radius:50%;background:var(--g1);color:white;font-size:10px;display:none;align-items:center;justify-content:center}
+    .frame-card.sel .fc-check{display:flex}
+    .fc-name{font-size:11px;font-weight:500;color:rgba(255,255,255,.55);transition:color .2s;white-space:nowrap}
+    .frame-card.sel .fc-name{color:white;font-weight:600}
+
+    /* Filter swatches */
+    .filter-row{display:flex;gap:10px;justify-content:center;width:100%;flex-shrink:0}
+    .sw-card{background:transparent;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;-webkit-tap-highlight-color:transparent;transition:transform .2s}
+    .sw-card:active{transform:scale(.92)}
+    .sw-circle{width:52px;height:52px;border-radius:50%;transition:box-shadow .22s,transform .22s}
+    .sw-card.sel .sw-circle{box-shadow:0 0 0 3px white,0 0 0 5px rgba(255,255,255,.2);transform:scale(1.1)}
+    .sw-sanoda  {background:radial-gradient(circle at 40% 40%,#FFE8D6 0%,#F0C8A0 60%,#D9A870 100%)}
+    .sw-golden  {background:radial-gradient(circle at 40% 40%,#FFD990 0%,#E8A830 60%,#B07820 100%)}
+    .sw-rose    {background:radial-gradient(circle at 40% 40%,#FFD6E0 0%,#F0A0B8 60%,#D06888 100%)}
+    .sw-lavender{background:radial-gradient(circle at 40% 40%,#E8DAFF 0%,#C0A0E8 60%,#8860C0 100%)}
+    .sw-bw      {background:conic-gradient(from 135deg,#111,#888,#EEE,#888,#111)}
+    .sw-name{font-size:10px;font-weight:400;color:rgba(255,255,255,.5);transition:color .2s}
+    .sw-card.sel .sw-name{color:white;font-weight:600}
+
+    /* Pick footer */
+    .pick-btns{display:flex;flex-direction:column;align-items:center;gap:11px;width:100%;flex-shrink:0}
+    .continue-btn{width:100%;max-width:340px;padding:15px;background:var(--g1);color:var(--cream);border:none;border-radius:100px;font-family:inherit;font-size:17px;font-weight:500;cursor:pointer;transition:all .22s;-webkit-tap-highlight-color:transparent}
+    .continue-btn:hover{background:var(--g2)}
+    .back-link{font-size:13px;color:rgba(255,255,255,.38);background:none;border:none;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .back-link:hover{color:rgba(255,255,255,.65)}
+
+    /* ══ CAMERA ════════════════════════════ */
+    #screen-camera{background:#0a0a0a}
+    #video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);transition:filter .3s ease}
+    .cam-ui{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;justify-content:space-between;padding:28px 22px}
+    .cam-top{display:flex;justify-content:space-between;align-items:center}
+    .cam-pill{background:rgba(0,0,0,.52);backdrop-filter:blur(10px);color:white;padding:9px 18px;border-radius:100px;font-size:13px;font-weight:500;border:none;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .cam-counter{letter-spacing:1.5px;pointer-events:none}
+    .cam-filter-badge{display:none;letter-spacing:.5px}
+    .cam-bottom{display:flex;flex-direction:column;align-items:center;gap:20px}
+    .thumb-row{display:flex;gap:10px;justify-content:center}
+    .thumb-slot{width:64px;height:48px;border-radius:8px;border:1.5px solid rgba(255,255,255,.28);background:rgba(255,255,255,.08);overflow:hidden;transition:border-color .3s}
+    .thumb-slot.done{border-color:var(--gold)}
+    .thumb-slot img{width:100%;height:100%;object-fit:cover}
+    .shutter-btn{width:78px;height:78px;border-radius:50%;background:white;border:4px solid rgba(255,255,255,.38);box-shadow:0 0 0 7px rgba(255,255,255,.14);cursor:pointer;transition:transform .18s;-webkit-tap-highlight-color:transparent}
+    .shutter-btn:active{transform:scale(.88)}
+    .shutter-btn:disabled{opacity:.45;cursor:not-allowed}
+    .cam-hint{color:rgba(255,255,255,.65);font-size:13px;min-height:20px}
+    #cdwrap{position:absolute;inset:0;z-index:2;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.25)}
+    #cdwrap.show{display:flex}
+    #cdnum{font-size:clamp(130px,22vw,210px);font-weight:700;color:white;text-shadow:0 8px 40px rgba(0,0,0,.35);animation:popIn 1s ease-out forwards}
+    @keyframes popIn{0%{transform:scale(1.9);opacity:0}25%{transform:scale(1);opacity:1}85%{transform:scale(1);opacity:1}100%{transform:scale(.82);opacity:.4}}
+    #flash{position:absolute;inset:0;z-index:3;background:white;opacity:0;pointer-events:none;transition:opacity .06s}
+    #flash.on{opacity:1}
+    #cap-canvas{display:none}
+
+    /* ══ PROCESSING ════════════════════════ */
+    #screen-processing{background:var(--bg);gap:18px}
+    .spin{width:46px;height:46px;border:3px solid rgba(27,67,50,.18);border-top-color:var(--g1);border-radius:50%;animation:spinning .75s linear infinite}
+    @keyframes spinning{to{transform:rotate(360deg)}}
+    @keyframes pulse{0%{transform:scale(1);opacity:1}50%{transform:scale(1.2);opacity:.7}100%{transform:scale(1);opacity:1}}
+    .proc-t{font-size:22px;font-weight:500;color:var(--g1)}
+    .proc-s{font-size:14px;color:var(--g1);opacity:.45}
+
+    /* ══ RESULT ════════════════════════════ */
+    #screen-result{background:#111;padding:20px;gap:16px;justify-content:flex-end}
+
+    .result-img-wrap{flex:1;display:flex;align-items:center;justify-content:center;position:relative;width:100%;min-height:0}
+    #result-img{max-height:100%;max-width:100%;border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.65);object-fit:contain}
+    .result-spinner{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.5);border-radius:6px}
+
+    .res-btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;flex-shrink:0}
+    .rbtn{padding:12px 26px;border-radius:100px;border:2px solid;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;transition:all .22s;-webkit-tap-highlight-color:transparent}
+    .rbtn.pri{background:#EDEAE3;border-color:#EDEAE3;color:#1B4332}
+    .rbtn.sec{background:transparent;border-color:rgba(255,255,255,.32);color:white}
+    .rbtn.accent{background:#C9963A;border-color:#C9963A;color:white}
+    .rbtn:hover{transform:scale(1.05)}
+
+    /* Re-pick panel (slides up over result) */
+    #repick-panel{
+      position:absolute;bottom:0;left:0;right:0;z-index:10;
+      background:rgba(8,18,12,.92);backdrop-filter:blur(28px) saturate(1.3);-webkit-backdrop-filter:blur(28px) saturate(1.3);
+      border-top:1px solid rgba(255,255,255,.09);
+      border-radius:26px 26px 0 0;
+      padding:16px 20px 40px;
+      display:flex;flex-direction:column;align-items:center;gap:12px;
+      transform:translateY(100%);transition:transform .38s cubic-bezier(.32,.72,0,1);
+      max-height:65vh;overflow-y:auto;
+    }
+    #repick-panel.open{transform:translateY(0)}
+    .rp-label{font-size:11px;font-weight:600;color:rgba(255,255,255,.45);letter-spacing:2.5px;text-transform:uppercase;align-self:flex-start;flex-shrink:0}
+    .rp-frames{display:flex;gap:10px;width:100%;flex-shrink:0;overflow-x:auto;padding-bottom:4px}
+    .rp-frames::-webkit-scrollbar{display:none}
+    .rp-filters{display:flex;gap:10px;justify-content:center;width:100%;flex-shrink:0}
+    .rp-close{padding:12px 40px;background:rgba(255,255,255,.1);color:white;border:1px solid rgba(255,255,255,.15);border-radius:100px;font-family:inherit;font-size:14px;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+
+    /* ── Toast ─────────────────────────── */
+    #toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(27,67,50,.92);color:white;padding:12px 28px;border-radius:100px;font-size:14px;font-weight:500;pointer-events:none;opacity:0;transition:all .3s ease;white-space:nowrap;z-index:999}
+    #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+    @media print{*{display:none!important}#print-target{display:block!important;width:100%}}
+
+    /* ══ SELECT ═══════════════════════════ */
+    #screen-select{background:#0a0a0a;flex-direction:column;padding:0;justify-content:flex-start}
+    .sel-header{padding:24px 20px 8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .sel-title{font-size:17px;font-weight:600;color:white}
+    .sel-hint{font-size:12px;color:rgba(255,255,255,.45);text-align:center;padding:0 20px 12px;flex-shrink:0;letter-spacing:.3px}
+    .sel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 14px;flex:1;overflow-y:auto;align-content:start;padding-bottom:12px}
+    .sel-grid::-webkit-scrollbar{display:none}
+    .sel-thumb{position:relative;border-radius:10px;overflow:hidden;cursor:pointer;aspect-ratio:var(--thumb-ar,4/3);background:#222;border:3px solid transparent;transition:border-color .18s,transform .18s;-webkit-tap-highlight-color:transparent}
+    .sel-thumb:active{transform:scale(.95)}
+    .sel-thumb img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+    .sel-thumb.picked{border-color:var(--g3)}
+    .sel-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(27,67,50,.72);font-size:26px;font-weight:700;color:white;opacity:0;transition:opacity .18s}
+    .sel-thumb.picked .sel-num{opacity:1}
+    .sel-foot{padding:14px 20px 36px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:10px}
+    .sel-confirm{padding:15px 60px;background:var(--g1);color:white;border:none;border-radius:100px;font-family:inherit;font-size:16px;font-weight:500;cursor:pointer;transition:opacity .2s;-webkit-tap-highlight-color:transparent}
+    .sel-confirm:disabled{opacity:.3;cursor:default}
+    .sel-back{font-size:13px;color:rgba(255,255,255,.38);background:none;border:none;font-family:inherit;cursor:pointer;padding:4px 12px;-webkit-tap-highlight-color:transparent}
+
+    /* ══ PAY GATE ══════════════════════════ */
+    #pay-gate{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+    #pay-gate.open{display:flex}
+    .pg-box-wrap{position:relative;width:100%;max-width:360px}
+    .pg-box{background:#1c1c1c;border:1px solid rgba(255,255,255,.1);border-radius:22px;overflow:hidden}
+    .pg-close{position:absolute;top:-14px;right:-8px;background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.7);font-size:18px;cursor:pointer;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+    .pg-title{text-align:center;font-size:16px;font-weight:600;color:white;padding:22px 20px 4px}
+    .pg-sub{text-align:center;font-size:12px;color:rgba(255,255,255,.38);padding:0 20px 16px}
+    .pg-tabs{display:flex;border-bottom:1px solid rgba(255,255,255,.09)}
+    .pg-tab{flex:1;padding:11px 8px;font-family:inherit;font-size:13px;font-weight:500;background:none;border:none;border-bottom:2px solid transparent;color:rgba(255,255,255,.38);cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent}
+    .pg-tab.active{color:var(--g3);border-bottom-color:var(--g3)}
+    .pg-panel{display:none;padding:18px 18px 20px}
+    .pg-panel.active{display:block}
+    .pg-input{width:100%;padding:13px 16px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.14);border-radius:12px;color:white;font-family:inherit;font-size:15px;letter-spacing:2px;text-align:center;text-transform:uppercase;outline:none;margin-bottom:8px;-webkit-appearance:none}
+    .pg-input:focus{border-color:var(--g3)}
+    .pg-input::placeholder{letter-spacing:0;text-transform:none;color:rgba(255,255,255,.3);font-size:13px}
+    .pg-err{font-size:12px;color:#ff7070;text-align:center;min-height:16px;margin-bottom:6px}
+    .pg-btn{width:100%;padding:14px;background:var(--g1);color:white;border:none;border-radius:12px;font-family:inherit;font-size:15px;font-weight:500;cursor:pointer;transition:opacity .2s;-webkit-tap-highlight-color:transparent}
+    .pg-btn:hover{opacity:.88}
+    .pg-note{margin-top:14px;padding:12px 14px;background:rgba(201,150,58,.08);border:1px solid rgba(201,150,58,.2);border-radius:10px;font-size:12px;color:rgba(255,255,255,.55);text-align:center;line-height:1.6}
+    .pg-note strong{color:var(--gold);font-weight:600}
+    .pg-qr-wrap{display:flex;flex-direction:column;align-items:center;gap:14px}
+    .pg-qr{width:190px;height:190px;background:#fff;border-radius:14px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .pg-qr img{width:100%;height:100%;object-fit:contain}
+    .pg-qr-placeholder{text-align:center;color:#888;font-size:11px;line-height:1.7}
+    .pg-qr-info{font-size:12px;color:rgba(255,255,255,.5);text-align:center;line-height:1.65}
+  </style>
+</head>
+<body>
+
+<!-- ══ HOME ═══════════════════════════════════ -->
+<div id="screen-home" class="screen active">
+  <div class="blob blob-1"></div><div class="blob blob-2"></div>
+  <div class="home-inner">
+    <div class="logo-ring"><img src="assets/ncttx-logo.png" alt="Logo Nhà của Thời Thanh Xuân"></div>
+    <div class="brand-name">Quán của Thời<br>Thanh Xuân</div>
+    <div class="brand-loc">Đà Lạt</div>
+    <div class="hr"></div>
+    <div class="choose-label">Chọn kiểu chụp</div>
+
+    <div class="layout-grid">
+      <button class="lopt" data-count="2" data-layout="grid" onclick="selectLayout(2,'grid',this)">
+        <div class="lopt-icon g21"><span></span><span></span></div>
+        <span class="lopt-txt">2 ảnh lưới</span>
+      </button>
+      <button class="lopt sel" data-count="4" data-layout="grid" onclick="selectLayout(4,'grid',this)">
+        <div class="lopt-icon g22"><span></span><span></span><span></span><span></span></div>
+        <span class="lopt-txt">4 ảnh lưới</span>
+      </button>
+      <button class="lopt" data-count="6" data-layout="grid" onclick="selectLayout(6,'grid',this)">
+        <div class="lopt-icon g23"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        <span class="lopt-txt">6 ảnh lưới</span>
+      </button>
+      <button class="lopt" data-count="2" data-layout="strip" onclick="selectLayout(2,'strip',this)">
+        <div class="lopt-icon s12"><span></span><span></span></div>
+        <span class="lopt-txt">2 ảnh dọc</span>
+      </button>
+      <button class="lopt" data-count="3" data-layout="strip" onclick="selectLayout(3,'strip',this)">
+        <div class="lopt-icon s13"><span></span><span></span><span></span></div>
+        <span class="lopt-txt">3 ảnh dọc</span>
+      </button>
+      <button class="lopt" data-count="6" data-layout="strip" onclick="selectLayout(6,'strip',this)">
+        <div class="lopt-icon s16"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        <span class="lopt-txt">6 ảnh dọc</span>
+      </button>
+    </div>
+
+    <button class="start-btn" onclick="goToPick()">Chọn phong cách →</button>
+  </div>
+  <div class="home-foot">Lưu giữ ký ức · Quán của Thời Thanh Xuân</div>
+</div>
+
+<!-- ══ PICK ════════════════════════════════════ -->
+<div id="screen-pick" class="screen">
+  <video id="pick-video" autoplay playsinline muted></video>
+  <div class="pick-panel">
+    <div class="panel-handle"></div>
+
+    <div class="pick-label-row">
+      <div class="pick-label">Kiểu khung</div>
+      <button class="rotate-cam-btn" onclick="rotateCam(this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+        Xoay camera
+      </button>
+    </div>
+    <div class="frame-grid" id="pick-frame-grid"></div>
+
+    <div class="pick-label">Tông màu da</div>
+    <div class="filter-row" id="pick-filter-row">
+      <button class="sw-card sel" onclick="selectFilter('sanoda',this,'pick')"><div class="sw-circle sw-sanoda"></div><div class="sw-name">Sáng Da</div></button>
+      <button class="sw-card" onclick="selectFilter('golden',this,'pick')"><div class="sw-circle sw-golden"></div><div class="sw-name">Hoàng Hôn</div></button>
+      <button class="sw-card" onclick="selectFilter('rose',this,'pick')"><div class="sw-circle sw-rose"></div><div class="sw-name">Hồng Ngọc</div></button>
+      <button class="sw-card" onclick="selectFilter('lavender',this,'pick')"><div class="sw-circle sw-lavender"></div><div class="sw-name">Oải Hương</div></button>
+      <button class="sw-card" onclick="selectFilter('bw',this,'pick')"><div class="sw-circle sw-bw"></div><div class="sw-name">Điện Ảnh</div></button>
+    </div>
+
+    <div class="pick-btns">
+      <button class="continue-btn" onclick="goToCamera()">Bắt đầu chụp →</button>
+      <button class="back-link" onclick="backToHome()">← Quay lại</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CAMERA ══════════════════════════════════ -->
+<div id="screen-camera" class="screen">
+  <video id="video" autoplay playsinline muted></video>
+  <canvas id="cap-canvas"></canvas>
+  <div class="cam-ui">
+    <div class="cam-top">
+      <button class="cam-pill" onclick="backToPick()">← Đổi khung</button>
+      <div class="cam-pill cam-counter" id="cam-counter">Ảnh 1 / 4</div>
+      <button class="cam-pill" onclick="rotateCamFromCamera(this)" style="font-size:16px;padding:6px 12px">↺</button>
+      <div class="cam-pill cam-filter-badge" id="filter-badge"></div>
+    </div>
+    <div class="cam-bottom">
+      <div class="thumb-row" id="thumb-row"></div>
+      <button class="shutter-btn" id="shutter-btn" onclick="beginShooting()"></button>
+      <div class="cam-hint" id="cam-hint">Nhấn nút để bắt đầu chụp</div>
+    </div>
+  </div>
+  <div id="cdwrap"><span id="cdnum">3</span></div>
+  <div id="flash"></div>
+</div>
+
+<!-- ══ SELECT ══════════════════════════════════ -->
+<div id="screen-select" class="screen">
+  <div class="sel-header">
+    <div class="sel-title">Chọn ảnh đẹp nhất</div>
+  </div>
+  <div class="sel-hint" id="sel-hint">Chọn 4 ảnh · 0 / 4 đã chọn</div>
+  <div class="sel-grid" id="sel-grid"></div>
+  <div class="sel-foot">
+    <button class="sel-confirm" id="sel-confirm" disabled onclick="confirmSelection()">Tiếp theo →</button>
+    <button class="sel-back" onclick="backFromSelect()">← Chụp lại</button>
+  </div>
+</div>
+
+<!-- ══ PROCESSING ══════════════════════════════ -->
+<div id="screen-processing" class="screen">
+  <div class="spin"></div>
+  <div class="proc-t">Đang tạo ảnh kỷ niệm...</div>
+  <div class="proc-s">Xin chờ một chút</div>
+</div>
+
+<!-- ══ RESULT ══════════════════════════════════ -->
+<div id="screen-result" class="screen">
+  <div class="result-img-wrap">
+    <img id="result-img" alt="Ảnh kỷ niệm">
+    <div class="result-spinner" id="result-spinner"><div class="spin"></div></div>
+    <!-- Cloud Status Badge -->
+    <div id="cloud-status-badge" style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.65); color: white; padding: 6px 14px; border-radius: 100px; font-size: 13px; font-weight: 500; display: none; align-items: center; gap: 8px; z-index: 10; font-family: inherit;">
+      <span id="cloud-status-icon">☁</span>
+      <span id="cloud-status-text">Đang tải lên cloud...</span>
+    </div>
+  </div>
+
+  <div class="res-btns">
+    <button class="rbtn pri" onclick="sharePhoto()">Lưu / Chia sẻ</button>
+    <button class="rbtn accent" onclick="toggleRepick()">✦ Đổi khung</button>
+    <button class="rbtn sec" onclick="printPhoto()">In ảnh</button>
+    <button class="rbtn sec" onclick="goHome()">Chụp lại</button>
+  </div>
+
+  <!-- Re-pick slide-up panel -->
+  <div id="repick-panel">
+    <div class="panel-handle"></div>
+    <div class="rp-label">Kiểu khung</div>
+    <div class="rp-frames" id="rp-frame-grid"></div>
+    <div class="rp-label">Tông màu da</div>
+    <div class="rp-filters">
+      <button class="sw-card sel" onclick="selectFilter('sanoda',this,'rp')"><div class="sw-circle sw-sanoda"></div><div class="sw-name">Sáng Da</div></button>
+      <button class="sw-card" onclick="selectFilter('golden',this,'rp')"><div class="sw-circle sw-golden"></div><div class="sw-name">Hoàng Hôn</div></button>
+      <button class="sw-card" onclick="selectFilter('rose',this,'rp')"><div class="sw-circle sw-rose"></div><div class="sw-name">Hồng Ngọc</div></button>
+      <button class="sw-card" onclick="selectFilter('lavender',this,'rp')"><div class="sw-circle sw-lavender"></div><div class="sw-name">Oải Hương</div></button>
+      <button class="sw-card" onclick="selectFilter('bw',this,'rp')"><div class="sw-circle sw-bw"></div><div class="sw-name">Điện Ảnh</div></button>
+    </div>
+    <button class="rp-close" onclick="toggleRepick()">Xong ✓</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const LOGO_B64='assets/ncttx-logo.png';
+const logoImg=new Image();
+const logoReady=new Promise(r=>{logoImg.onload=r;logoImg.onerror=r;logoImg.src=LOGO_B64;});
+// ── STATE ─────────────────────────────────────
+const S = {
+  count: 4, layout: 'grid',
+  frame: 'classic', filter: 'sanoda',
+  photos: [], allPhotos: [], selected: [],
+  stream: null, busy: false, finalURL: null, unlocked: false
+};
+const DB_URL = 'https://ncttx-photobooth-default-rtdb.asia-southeast1.firebasedatabase.app';
+
+// ── FILTERS ───────────────────────────────────
+const VIDEO_FILTERS = {
+  sanoda:   'brightness(1.14) contrast(0.87) saturate(0.9)',
+  golden:   'sepia(0.38) saturate(1.38) brightness(1.07) contrast(0.94)',
+  rose:     'sepia(0.18) saturate(1.28) brightness(1.1) hue-rotate(-15deg)',
+  lavender: 'saturate(0.82) brightness(1.08) contrast(0.9) hue-rotate(25deg)',
+  bw:       'grayscale(1) contrast(1.15) brightness(1.04)'
+};
+const CANVAS_FILTERS = {
+  sanoda:   'brightness(1.14) contrast(0.87) saturate(0.9)',
+  golden:   'sepia(0.38) saturate(1.38) brightness(1.07) contrast(0.94)',
+  rose:     'sepia(0.18) saturate(1.28) brightness(1.1) hue-rotate(-15deg)',
+  lavender: 'saturate(0.82) brightness(1.08) contrast(0.9) hue-rotate(25deg)',
+  bw:       'grayscale(1) contrast(1.15) brightness(1.04)'
+};
+const FILTER_LABELS = { sanoda:'Sáng Da', golden:'Hoàng Hôn', rose:'Hồng Ngọc', lavender:'Oải Hương', bw:'Điện Ảnh' };
+
+// ── SCREENS ───────────────────────────────────
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+}
+
+// ── HOME ──────────────────────────────────────
+function selectLayout(count, layout, btn) {
+  S.count = count; S.layout = layout;
+  document.querySelectorAll('.lopt').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  updateFramePicker(layout);
+}
+
+async function goToPick() {
+  S.photos = []; S.allPhotos = []; S.selected = []; S.busy = false; S.finalURL = null; S.unlocked = false;
+  syncPickSelections();
+  show('pick');
+  await startStream(document.getElementById('pick-video'));
+}
+
+// ── STREAM ────────────────────────────────────
+async function startStream(videoEl) {
+  const camW = parseInt(localStorage.getItem('pb_cam_w') || '1920');
+  const camH = parseInt(localStorage.getItem('pb_cam_h') || '1440');
+  const isPortrait = camH > camW;
+
+  // Apply rotation CSS to preview
+  if (isPortrait) {
+    videoEl.classList.add('cam-portrait');
+    videoEl.style.filter = '';
+  } else {
+    videoEl.classList.remove('cam-portrait');
+  }
+
+  // Reuse stream nếu cùng settings (dùng lastCam để tránh restart loop)
+  if (S.stream && S.lastCamW === camW && S.lastCamH === camH) {
+    videoEl.srcObject = S.stream;
+    videoEl.style.filter = VIDEO_FILTERS[S.filter];
+    if (videoEl.paused) await videoEl.play().catch(()=>{});
+    return;
+  }
+
+  if (S.stream) { S.stream.getTracks().forEach(t => t.stop()); S.stream = null; }
+
+  try {
+    // Camera chỉ hỗ trợ landscape — request landscape resolution tương đương
+    const reqW = Math.max(camW, camH);
+    const reqH = Math.min(camW, camH);
+    const vidConstraints = { facingMode:'user', width:{ideal:reqW}, height:{ideal:reqH} };
+    S.stream = await navigator.mediaDevices.getUserMedia({ video: vidConstraints, audio: false });
+    S.lastCamW = camW;
+    S.lastCamH = camH;
+    videoEl.srcObject = S.stream;
+    videoEl.style.filter = VIDEO_FILTERS[S.filter];
+    await videoEl.play();
+  } catch {
+    alert('Không thể truy cập camera.\nVui lòng cấp quyền camera và thử lại.');
+    show('home');
+  }
+}
+
+function applyRotationCSS(videoEl) {
+  const camW = parseInt(localStorage.getItem('pb_cam_w') || '1920');
+  const camH = parseInt(localStorage.getItem('pb_cam_h') || '1440');
+  if (camH > camW) videoEl.classList.add('cam-portrait');
+  else videoEl.classList.remove('cam-portrait');
+}
+
+async function rotateCam(btn) {
+  const camW = parseInt(localStorage.getItem('pb_cam_w') || '1920');
+  const camH = parseInt(localStorage.getItem('pb_cam_h') || '1440');
+  localStorage.setItem('pb_cam_w', camH);
+  localStorage.setItem('pb_cam_h', camW);
+  S.lastCamW = null;
+  btn.style.opacity = '0.5';
+  btn.disabled = true;
+  const pickVideo = document.getElementById('pick-video');
+  applyRotationCSS(pickVideo);
+  await startStream(pickVideo);
+  btn.style.opacity = '';
+  btn.disabled = false;
+}
+
+async function rotateCamFromCamera(btn) {
+  const camW = parseInt(localStorage.getItem('pb_cam_w') || '1920');
+  const camH = parseInt(localStorage.getItem('pb_cam_h') || '1440');
+  localStorage.setItem('pb_cam_w', camH);
+  localStorage.setItem('pb_cam_h', camW);
+  S.lastCamW = null;
+  if (btn) { btn.style.opacity = '0.5'; btn.disabled = true; }
+  const videoEl = document.getElementById('video');
+  applyRotationCSS(videoEl);
+  await startStream(videoEl);
+  if (btn) { btn.style.opacity = ''; btn.disabled = false; }
+}
+
+function stopCam() {
+  if (S.stream) { S.stream.getTracks().forEach(t => t.stop()); S.stream = null; }
+  ['pick-video','video'].forEach(id => { const v=document.getElementById(id); if(v) v.srcObject=null; });
+}
+
+// ── FRAME LOADING FROM IndexedDB ──────────────
+const DB_NAME = 'photobooth', DB_STORE = 'frames';
+let _frameDB = null;
+function openFrameDB() {
+  if (_frameDB) return Promise.resolve(_frameDB);
+  return new Promise((res, rej) => {
+    const r = indexedDB.open(DB_NAME, 1);
+    r.onupgradeneeded = e => e.target.result.createObjectStore(DB_STORE, { keyPath: 'id' });
+    r.onsuccess = e => { _frameDB = e.target.result; res(_frameDB); };
+    r.onerror = rej;
+  });
+}
+async function getFrameData(id) {
+  try {
+    const db = await openFrameDB();
+    return new Promise((res, rej) => {
+      const r = db.transaction(DB_STORE,'readonly').objectStore(DB_STORE).get(id);
+      r.onsuccess = () => res(r.result); r.onerror = rej;
+    });
+  } catch(e) { return null; }
+}
+const frameSlotMap = {};
+const frameLayoutMap = {};
+
+async function loadActiveFrames() {
+  if (localStorage.getItem('pb_qr_enabled') === 'true') {
+    loadScript('https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js')
+      .catch(() => console.warn('Không thể tải thư viện QR Code.'));
+  }
+  const meta = JSON.parse(localStorage.getItem('pb_frames') || '[]');
+  if (meta.length === 0) return;
+
+  // Build slot count + layout type maps
+  meta.forEach(f => {
+    frameSlotMap[f.id]   = f.slotCount   || 0;
+    frameLayoutMap[f.id] = f.layoutType  || 'grid';
+  });
+
+  // Show only layout buttons that have at least one matching frame
+  // Background frames (slotCount=0) support any count within their layout type
+  const lopts = document.querySelectorAll('.lopt');
+  lopts.forEach(b => {
+    const lt = b.dataset.layout;
+    const c  = parseInt(b.dataset.count);
+    const hasMatch = meta.some(f => {
+      const flt = frameLayoutMap[f.id];
+      const sc  = frameSlotMap[f.id];
+      return flt === lt && (sc === 0 || sc === c);
+    });
+    const stripBlocked = lt === 'strip' && c !== 2 && c !== 3;
+    b.style.display = (hasMatch && !stripBlocked) ? '' : 'none';
+  });
+
+  // Auto-select first visible lopt
+  const firstLopt = [...lopts].find(b => b.style.display !== 'none');
+  if (firstLopt) {
+    S.count  = parseInt(firstLopt.dataset.count);
+    S.layout = firstLopt.dataset.layout;
+    lopts.forEach(b => b.classList.remove('sel'));
+    firstLopt.classList.add('sel');
+  }
+
+  // Build frame cards for pick + re-pick panels
+  const pickGrid = document.getElementById('pick-frame-grid');
+  const rpGrid   = document.getElementById('rp-frame-grid');
+  pickGrid.innerHTML = ''; rpGrid.innerHTML = '';
+  meta.forEach((f) => {
+    ['pick','rp'].forEach(ctx => {
+      const btn = document.createElement('button');
+      btn.className = 'frame-card';
+      btn.dataset.layout  = frameLayoutMap[f.id];
+      btn.dataset.frameId = f.id;
+      btn.onclick = () => selectFrame(f.id, btn, ctx);
+      btn.innerHTML = `<div class="fc-inner" style="padding:0;overflow:hidden;background:#eee"><div class="fc-check">&#10003;</div><img src="${f.thumb}" style="width:100%;height:100%;object-fit:cover;display:block"></div><div class="fc-name">${f.name}</div>`;
+      (ctx === 'pick' ? pickGrid : rpGrid).appendChild(btn);
+    });
+  });
+
+  // Show only frames matching current layout, auto-select first
+  updateFramePicker(S.layout);
+}
+
+function updateFramePicker(layout) {
+  ['pick-frame-grid', 'rp-frame-grid'].forEach(gridId => {
+    const grid = document.getElementById(gridId);
+    if (!grid) return;
+    let firstVisible = null;
+    grid.querySelectorAll('.frame-card').forEach(card => {
+      const match = card.dataset.layout === layout;
+      card.style.display = match ? '' : 'none';
+      if (match && !firstVisible) firstVisible = card;
+    });
+    // If the currently selected card is now hidden, switch to first visible
+    const cur = grid.querySelector('.frame-card.sel');
+    if (!cur || cur.style.display === 'none') {
+      grid.querySelectorAll('.frame-card').forEach(b => b.classList.remove('sel'));
+      if (firstVisible) {
+        firstVisible.classList.add('sel');
+        const id = firstVisible.dataset.frameId;
+        if (id) {
+          S.frame = id;
+          const sc = frameSlotMap[id];
+          if (sc > 0) S.count = sc;
+        }
+      }
+    }
+  });
+}
+const frameCache = {};
+async function getFrame(id) {
+  if (frameCache[id]) return frameCache[id];
+  const record = await getFrameData(id);
+  const src = (record && record.dataURL) ? record.dataURL : `frames/${id}.png`;
+  const img = await loadImg(src);
+  const slots = detectSlots(img);
+  frameCache[id] = { img, slots };
+  return frameCache[id];
+}
+document.addEventListener('DOMContentLoaded', loadActiveFrames);
+
+// ── PICK ──────────────────────────────────────
+function selectFrame(f, btn, ctx) {
+  S.frame = f;
+  const sc = frameSlotMap[f];
+  if (sc > 0) S.count = sc;  // background frames (sc=0) keep user-chosen count
+  const container = ctx === 'rp' ? document.getElementById('rp-frame-grid') : document.getElementById('pick-frame-grid');
+  container.querySelectorAll('.frame-card').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  if (ctx === 'rp') recompose();
+}
+
+function selectFilter(f, btn, ctx) {
+  S.filter = f;
+  const container = ctx === 'rp' ? document.querySelector('.rp-filters') : document.getElementById('pick-filter-row');
+  container.querySelectorAll('.sw-card').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  // Update live video preview
+  const vf = VIDEO_FILTERS[f];
+  ['pick-video','video'].forEach(id => { const v=document.getElementById(id); if(v) v.style.filter=vf; });
+  if (ctx === 'rp') recompose();
+}
+
+function syncPickSelections() {
+  // Keep pick panel in sync with current S.frame/filter
+  document.getElementById('pick-frame-grid').querySelectorAll('.frame-card').forEach(b => {
+    b.classList.toggle('sel', b.querySelector('.fc-inner').classList.contains('fc-' + S.frame));
+  });
+  document.getElementById('pick-filter-row').querySelectorAll('.sw-card').forEach((b, i) => {
+    const keys = Object.keys(VIDEO_FILTERS);
+    b.classList.toggle('sel', keys[i] === S.filter);
+  });
+}
+
+function backToHome() { stopCam(); show('home'); }
+
+// ── CAMERA ────────────────────────────────────
+async function goToCamera() {
+  show('camera');
+  S.photos = []; S.allPhotos = []; S.selected = []; S.busy = false;
+  applyRotationCSS(document.getElementById('video'));
+  buildThumbs(); updateCounter();
+  const badge = document.getElementById('filter-badge');
+  badge.textContent = FILTER_LABELS[S.filter];
+  badge.style.display = S.filter === 'sanoda' ? 'none' : 'inline-block';
+  const video = document.getElementById('video');
+  video.style.filter = VIDEO_FILTERS[S.filter];
+  if (S.stream) { video.srcObject = S.stream; if (video.paused) await video.play().catch(()=>{}); }
+  else await startStream(video);
+  document.getElementById('shutter-btn').disabled = false;
+  document.getElementById('cam-hint').textContent = 'Nhấn nút để bắt đầu chụp';
+}
+
+function backToPick() {
+  S.busy = false; S.photos = []; S.allPhotos = []; S.selected = [];
+  show('pick');
+  const pv = document.getElementById('pick-video');
+  if (S.stream) { pv.srcObject=S.stream; pv.style.filter=VIDEO_FILTERS[S.filter]; if(pv.paused) pv.play().catch(()=>{}); }
+}
+
+function buildThumbs() {
+  const row = document.getElementById('thumb-row');
+  row.innerHTML = '';
+  for (let i = 0; i < S.count + 2; i++) {
+    const s = document.createElement('div');
+    s.className='thumb-slot'; s.id='ts-'+i; row.appendChild(s);
+  }
+}
+
+function updateCounter() {
+  const total = S.count + 2;
+  const cur = Math.min(S.allPhotos.length + 1, total);
+  document.getElementById('cam-counter').textContent = `Ảnh ${cur} / ${total}`;
+}
+
+function beginShooting() {
+  if (S.busy) return;
+  S.busy = true;
+  document.getElementById('shutter-btn').disabled = true;
+  document.getElementById('cam-hint').textContent = '';
+  shootNext();
+}
+
+function shootNext() { countdown(3, captureFrame); }
+
+function countdown(from, done) {
+  const wrap=document.getElementById('cdwrap'), num=document.getElementById('cdnum');
+  wrap.classList.add('show');
+  let cur=from;
+  const render=()=>{ num.textContent=cur; num.style.animation='none'; void num.offsetWidth; num.style.animation='popIn 1s ease-out forwards'; };
+  render();
+  const tick=setInterval(()=>{ cur--; if(cur>0) render(); else { clearInterval(tick); wrap.classList.remove('show'); done(); } }, 1000);
+}
+
+function captureFrame() {
+  const video=document.getElementById('video'), canvas=document.getElementById('cap-canvas'), ctx=canvas.getContext('2d');
+  const W=video.videoWidth||1280, H=video.videoHeight||960;
+
+  const camW = parseInt(localStorage.getItem('pb_cam_w') || '1920');
+  const camH = parseInt(localStorage.getItem('pb_cam_h') || '1440');
+  const isPortrait = camH > camW;
+
+  if (isPortrait) {
+    // Camera cho landscape stream → rotate 90° để ra portrait
+    // Dùng temp canvas để mirror trước, sau đó rotate vào canvas chính
+    const tmp = document.createElement('canvas');
+    tmp.width = W; tmp.height = H;
+    const tc = tmp.getContext('2d');
+    tc.translate(W, 0); tc.scale(-1, 1);
+    tc.drawImage(video, 0, 0, W, H);
+    // Rotate 90° CCW (khớp với CSS rotate(-90deg) trên preview)
+    canvas.width = H; canvas.height = W;
+    ctx.translate(0, W);
+    ctx.rotate(-Math.PI / 2);
+    ctx.drawImage(tmp, 0, 0, W, H);
+  } else {
+    // Landscape: crop theo screen AR như cũ
+    const screenAR = window.innerWidth / window.innerHeight;
+    const videoAR = W / H;
+    let sx = 0, sy = 0, sw = W, sh = H;
+    if (videoAR > screenAR) { sw = H * screenAR; sx = (W - sw) / 2; }
+    else { sh = W / screenAR; sy = (H - sh) / 2; }
+    canvas.width = sw; canvas.height = sh;
+    ctx.save();
+    ctx.translate(sw, 0); ctx.scale(-1, 1);
+    ctx.drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
+    ctx.restore();
+  }
+  
+  const flash=document.getElementById('flash'); flash.classList.add('on'); setTimeout(()=>flash.classList.remove('on'),160);
+  const dataURL=canvas.toDataURL('image/jpeg',0.9);
+  const idx=S.allPhotos.length; S.allPhotos.push(dataURL);
+  const slot=document.getElementById('ts-'+idx);
+  if (slot) { slot.classList.add('done'); const img=document.createElement('img'); img.src=dataURL; slot.appendChild(img); }
+  const total = S.count + 2;
+  if (S.allPhotos.length < total) { updateCounter(); setTimeout(shootNext,1500); }
+  else setTimeout(()=>{ stopCam(); showSelectScreen(); }, 700);
+}
+
+// ── COMPOSE ───────────────────────────────────
+
+async function composeAndShow() {
+  show('processing'); await delay(80);
+  setupCloudURL();
+  S.finalURL = await compose();
+  document.getElementById('result-img').src = S.finalURL;
+  show('result');
+  uploadPhotoToCloud();
+}
+
+// Tìm các vùng trong suốt hình chữ nhật trong frame PNG → vị trí ô ảnh
+function detectSlots(img) {
+  const c = mk(img.width, img.height);
+  const ctx = c.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+  const { data, width: W, height: H } = ctx.getImageData(0, 0, img.width, img.height);
+  const isHole = (x, y) => data[(y * W + x) * 4 + 3] < 10;
+  const visited = new Uint8Array(W * H);
+  const slots = [];
+  const S = 4; // bước scan
+  for (let y = 0; y < H; y += S) {
+    for (let x = 0; x < W; x += S) {
+      if (visited[y * W + x] || !isHole(x, y)) continue;
+      let w = S; while (x + w < W && isHole(x + w, y)) w += S;
+      let h = S; while (y + h < H && isHole(x, y + h)) h += S;
+      for (let dy = 0; dy < h; dy += S)
+        for (let dx = 0; dx < w; dx += S)
+          visited[(y + dy) * W + (x + dx)] = 1;
+      if (w > 80 && h > 60) slots.push({ x, y, w, h });
+    }
+  }
+  return slots.sort((a, b) => a.y !== b.y ? a.y - b.y : a.x - b.x);
+}
+
+function calcFixedSlots(W, H, count, ar = 16 / 9) {
+  const isStrip = S.layout && S.layout.startsWith('s');
+  const COLS = isStrip ? 1 : 2;
+  const ROWS = Math.ceil(count / COLS);
+  const GAP  = Math.round(W * 0.018);
+  let SW, SH, totalH, startY;
+
+  if (isStrip) {
+    // Bắt đầu từ 1/6 chiều cao, ảnh dàn đều xuống hết canvas
+    const PAD_X  = Math.round(W * 0.12);
+    const maxSW  = W - PAD_X * 2;
+    const idealSH = Math.round(maxSW / ar);
+    startY = Math.round(H / 8);
+    const availH = H - startY - Math.round(H * 0.05); // chừa 5% lề dưới
+    // Scale SH xuống nếu cần để vừa availH (tối thiểu 5% làm khoảng cách)
+    SH = ROWS * idealSH <= availH * 0.95
+      ? idealSH
+      : Math.floor(availH * 0.95 / ROWS);
+    SW = Math.round(SH * ar);
+    // Khoảng cách đều nhau giữa ảnh VÀ dưới ảnh cuối
+    const dynGAP = Math.round((availH - ROWS * SH) / ROWS);
+    totalH = ROWS * SH + (ROWS - 1) * dynGAP;
+
+    const slots = [];
+    for (let r = 0; r < ROWS; r++) {
+      slots.push({ x: Math.round((W - SW) / 2), y: startY + r * (SH + dynGAP), w: SW, h: SH });
+    }
+    return { slots, startY, totalH };
+  } else {
+    const PAD  = Math.round(W * 0.05);
+    SW   = Math.floor((W - PAD * 2 - GAP * (COLS - 1)) / COLS);
+    SH   = Math.round(SW / ar);
+    totalH = ROWS * SH + (ROWS - 1) * GAP;
+    
+    // Scale down if it exceeds vertical paper boundary
+    const maxTotalH = H - PAD * 2;
+    if (totalH > maxTotalH) {
+      SH = Math.floor((maxTotalH - GAP * (ROWS - 1)) / ROWS);
+      SW = Math.round(SH * ar);
+      totalH = ROWS * SH + (ROWS - 1) * GAP;
+    }
+    
+    startY = Math.round((H - totalH) / 2) + 10;
+  }
+
+  const slots = [];
+  for (let r = 0; r < ROWS; r++) {
+    for (let col = 0; col < COLS; col++) {
+      if (slots.length >= count) break;
+      const x = Math.round(W * 0.05) + col * (SW + GAP);
+      slots.push({ x, y: startY + r * (SH + GAP), w: SW, h: SH });
+    }
+  }
+  return { slots, startY, totalH };
+}
+
+async function compose() {
+  await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 200))]);
+  const { img, slots } = await getFrame(S.frame);
+  const photos = await Promise.all(S.photos.map(loadImg));
+  const canvas = mk(img.width, img.height);
+  const ctx = canvas.getContext('2d');
+
+  if (slots.length === 0) {
+    // Background mode: ảnh nền full, photos xếp lên theo grid cố định
+    const W = img.width, H = img.height;
+    // Nền trắng kem trước để tránh nền đen khi alpha < 1
+    ctx.fillStyle = '#F5F0E8';
+    ctx.fillRect(0, 0, W, H);
+    ctx.drawImage(img, 0, 0, W, H);
+
+    const camW = parseInt(localStorage.getItem('pb_cam_w') || '1920');
+    const camH = parseInt(localStorage.getItem('pb_cam_h') || '1440');
+    const photoAR = camW / camH;
+    const { slots: fixedSlots, startY, totalH } = calcFixedSlots(W, H, S.count, photoAR);
+
+    // ── Photos ──
+    fixedSlots.forEach(({ x, y, w, h }, i) => {
+      if (i >= photos.length) return;
+      const R = Math.round(w * 0.022);
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,0.42)';
+      ctx.shadowBlur = 26; ctx.shadowOffsetY = 10;
+      ctx.fillStyle = '#000';
+      rrect(ctx, x, y, w, h, R); ctx.fill();
+      ctx.restore();
+      ctx.save();
+      rrect(ctx, x, y, w, h, R); ctx.clip();
+      drawPhoto(ctx, photos[i], x, y, w, h);
+      ctx.restore();
+    });
+
+  } else {
+    // Frame mode: photos vào lỗ trong suốt, frame đè lên
+    photos.forEach((photo, i) => {
+      if (i >= slots.length) return;
+      const { x, y, w, h } = slots[i];
+      shdw(ctx, () => drawPhoto(ctx, photo, x, y, w, h));
+    });
+    ctx.drawImage(img, 0, 0);
+  }
+
+  // Watermark overlay — 100% opacity, sắc nét
+  const wmId = localStorage.getItem('pb_watermark_id');
+  if (wmId) {
+    const wmRecord = await getFrameData(wmId);
+    if (wmRecord && wmRecord.dataURL) {
+      const wmImg = await loadImg(wmRecord.dataURL);
+      ctx.drawImage(wmImg, 0, 0, canvas.width, canvas.height);
+    }
+  }
+
+  // Draw QR Code if enabled and cloud URL is available
+  if (localStorage.getItem('pb_qr_enabled') === 'true' && S.currentCloudURL) {
+    await drawQRCodeOnCanvas(ctx, S.currentCloudURL, canvas.width, canvas.height);
+  }
+
+  return canvas.toDataURL('image/jpeg', .88);
+}
+
+// ── Photo draw with canvas filter ─────────────
+function drawPhoto(ctx, img, x, y, pw, ph) {
+  if (!img) { ctx.fillStyle='#C8C4BC'; ctx.fillRect(x,y,pw,ph); return; }
+  const cf = CANVAS_FILTERS[S.filter];
+  ctx.save();
+  if (cf) { try { ctx.filter = cf; } catch(e) {} }
+  // Cover-crop: fill slot without stretching (like CSS object-fit:cover)
+  const iw = img.naturalWidth || img.width;
+  const ih = img.naturalHeight || img.height;
+  const iAR = iw / ih, sAR = pw / ph;
+  let sx, sy, sw, sh;
+  if (iAR > sAR) { sh = ih; sw = ih * sAR; sx = (iw - sw) / 2; sy = 0; }
+  else            { sw = iw; sh = iw / sAR; sx = 0; sy = (ih - sh) / 2; }
+  ctx.drawImage(img, sx, sy, sw, sh, x, y, pw, ph);
+  ctx.restore();
+  // Pixel-level grayscale fallback (for older Safari)
+  if (S.filter === 'bw') {
+    try {
+      const d = ctx.getImageData(x,y,pw,ph), px=d.data;
+      // Check if grayscale was actually applied (if not, pixels will still have color)
+      if (px[0]!==px[1] || px[1]!==px[2]) {
+        for (let i=0;i<px.length;i+=4){const g=px[i]*.299+px[i+1]*.587+px[i+2]*.114;px[i]=px[i+1]=px[i+2]=g;}
+        ctx.putImageData(d,x,y);
+      }
+    } catch(e){}
+  }
+}
+
+// ── Canvas utils ──────────────────────────────
+function mk(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c}
+function line(ctx,x1,y1,x2,y2){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()}
+function dots(ctx,cx,cy,color){[-30,0,30].forEach(dx=>{ctx.beginPath();ctx.arc(cx+dx,cy,3.5,0,Math.PI*2);ctx.fillStyle=color;ctx.fill()})}
+function shdw(ctx,fn){ctx.save();ctx.shadowColor='rgba(0,0,0,.18)';ctx.shadowBlur=14;ctx.shadowOffsetY=5;fn();ctx.restore()}
+function rrect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath()}
+function dateStamp(ctx,cx,y,color){const d=new Date();ctx.fillStyle=color;ctx.font='300 17px "Be Vietnam Pro",sans-serif';ctx.fillText(d.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}),cx,y)}
+function fitFont(ctx,text,maxW,baseSize,fontStr){let s=baseSize;ctx.font=fontStr.replace('{S}',s+'px');while(ctx.measureText(text).width>maxW&&s>9){s=Math.floor(s*.92);ctx.font=fontStr.replace('{S}',s+'px');}}
+function drawLogoIcon(ctx,cx,topY,h,leafClr,gridClr){
+  // Vẽ biểu tượng NCTTX: cây Y-shape + cửa sổ 2×2
+  const s=h/100;
+  ctx.save();
+  ctx.translate(cx-14*s,topY);
+  ctx.fillStyle=leafClr;
+  // Lá trái — teardrop rộng nghiêng trái
+  ctx.beginPath();
+  ctx.moveTo(-5*s,54*s);
+  ctx.bezierCurveTo(-14*s,30*s,-50*s,8*s,-53*s,26*s);
+  ctx.bezierCurveTo(-56*s,44*s,-26*s,56*s,-5*s,54*s);
+  ctx.fill();
+  // Cành phải — thon, nghiêng phải
+  ctx.beginPath();
+  ctx.moveTo(6*s,50*s);
+  ctx.bezierCurveTo(16*s,24*s,40*s,12*s,50*s,26*s);
+  ctx.bezierCurveTo(57*s,36*s,42*s,49*s,22*s,50*s);
+  ctx.lineTo(6*s,50*s);
+  ctx.fill();
+  // Thân — nối xuống
+  ctx.beginPath();
+  ctx.moveTo(-5*s,56*s);
+  ctx.bezierCurveTo(-5*s,70*s,-4*s,83*s,-3*s,95*s);
+  ctx.lineTo(6*s,95*s);
+  ctx.bezierCurveTo(7*s,83*s,8*s,70*s,8*s,56*s);
+  ctx.fill();
+  // Cửa sổ 2×2 (góc phải thân)
+  ctx.fillStyle=gridClr;
+  const gx=22*s,gy=12*s,gs=11*s,gg=3*s;
+  [[0,0],[gs+gg,0],[0,gs+gg],[gs+gg,gs+gg]].forEach(([dx,dy])=>{rrect(ctx,gx+dx,gy+dy,gs,gs,2*s);ctx.fill();});
+  ctx.restore();
+}
+
+
+// ── RESULT / RE-PICK ──────────────────────────
+function toggleRepick() {
+  const panel = document.getElementById('repick-panel');
+  const isOpen = panel.classList.contains('open');
+  if (!isOpen) {
+    // Sync repick panel to current S.frame/filter
+    syncRepickPanel();
+  }
+  panel.classList.toggle('open');
+}
+
+function syncRepickPanel() {
+  const frames = document.querySelector('.rp-frames');
+  const frameKeys = ['classic','film','blush','sage','plum'];
+  frames.querySelectorAll('.frame-card').forEach((b,i) => b.classList.toggle('sel', frameKeys[i] === S.frame));
+  const filters = document.querySelector('.rp-filters');
+  const filterKeys = Object.keys(VIDEO_FILTERS);
+  filters.querySelectorAll('.sw-card').forEach((b,i) => b.classList.toggle('sel', filterKeys[i] === S.filter));
+}
+
+async function recompose() {
+  const spinner = document.getElementById('result-spinner');
+  spinner.style.display = 'flex';
+  await delay(30);
+  S.finalURL = await compose();
+  document.getElementById('result-img').src = S.finalURL;
+  spinner.style.display = 'none';
+  uploadPhotoToCloud();
+}
+
+async function sharePhoto() {
+  if (!S.finalURL) return;
+  const blob=toBlob(S.finalURL), file=new File([blob],`QCTTX_${Date.now()}.jpg`,{type:'image/jpeg'});
+  if (navigator.share && navigator.canShare && navigator.canShare({files:[file]})) {
+    try { await navigator.share({files:[file],title:'Kỷ niệm tại Quán của Thời Thanh Xuân',text:'· Đà Lạt ·'}); return; }
+    catch(e){ if(e.name==='AbortError') return; }
+  }
+  const a=document.createElement('a'); a.href=S.finalURL; a.download=`QCTTX_${Date.now()}.jpg`; a.click();
+  toast('Ảnh đã được tải xuống');
+}
+
+function printPhoto() {
+  const w = window.open('', '_blank');
+
+  if (S.layout === 'strip') {
+    // Strip: full chiều dọc 15cm, ngang tự căn theo tỉ lệ, căn giữa, không méo
+    w.document.write(`<!DOCTYPE html><html><head><title>In ảnh</title><style>
+@page { size: 10cm 15cm; margin: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 10cm; height: 15cm; background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+img { height: 15cm; width: auto; max-width: 10cm; display: block; }
+</style></head><body><img src="${S.finalURL}" onload="window.focus();window.print();"></body></html>`);
+    w.document.close();
+  } else {
+    // Grid: full 10×15cm
+    w.document.write(`<!DOCTYPE html><html><head><title>In ảnh</title><style>
+@page { size: 10cm 15cm; margin: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 10cm; height: 15cm; overflow: hidden; background: #fff; }
+img { width: 10cm; height: 15cm; display: block; object-fit: cover; }
+</style></head><body><img src="${S.finalURL}" onload="window.focus();window.print();"></body></html>`);
+    w.document.close();
+  }
+}
+
+function goHome() {
+  document.getElementById('repick-panel').classList.remove('open');
+  stopCam(); S.photos=[]; S.allPhotos=[]; S.selected=[]; S.finalURL=null; S.unlocked=false;
+  S.currentPhotoId=null; S.currentCloudURL=null;
+  const badge = document.getElementById('cloud-status-badge');
+  if (badge) badge.style.display = 'none';
+  show('home');
+}
+
+// ── SELECT SCREEN ─────────────────────────────
+function showSelectScreen() {
+  const grid = document.getElementById('sel-grid');
+  grid.innerHTML = '';
+  S.selected = [];
+  // Cập nhật tỉ lệ thumbnail theo camera
+  const camW = parseInt(localStorage.getItem('pb_cam_w') || '1920');
+  const camH = parseInt(localStorage.getItem('pb_cam_h') || '1440');
+  grid.style.setProperty('--thumb-ar', `${camW}/${camH}`);
+  S.allPhotos.forEach((src, i) => {
+    const div = document.createElement('div');
+    div.className = 'sel-thumb';
+    div.innerHTML = `<img src="${src}"><div class="sel-num"></div>`;
+    div.onclick = () => toggleSelect(i, div);
+    grid.appendChild(div);
+  });
+  updateSelUI();
+  show('select');
+}
+
+function toggleSelect(idx, el) {
+  const pos = S.selected.indexOf(idx);
+  if (pos >= 0) {
+    S.selected.splice(pos, 1);
+    el.classList.remove('picked');
+  } else if (S.selected.length < S.count) {
+    S.selected.push(idx);
+    el.classList.add('picked');
+  }
+  updateSelUI();
+}
+
+function updateSelUI() {
+  const thumbs = document.querySelectorAll('#sel-grid .sel-thumb');
+  S.allPhotos.forEach((_, i) => {
+    const th = thumbs[i]; if (!th) return;
+    const pos = S.selected.indexOf(i);
+    th.classList.toggle('picked', pos >= 0);
+    th.querySelector('.sel-num').textContent = pos >= 0 ? (pos + 1) : '';
+  });
+  const done = S.selected.length === S.count;
+  document.getElementById('sel-confirm').disabled = !done;
+  document.getElementById('sel-hint').textContent = `Chọn ${S.count} ảnh đẹp nhất · ${S.selected.length} / ${S.count} đã chọn`;
+}
+
+function backFromSelect() {
+  S.allPhotos = []; S.selected = [];
+  goToCamera();
+}
+
+function confirmSelection() {
+  S.photos = S.selected.map(i => S.allPhotos[i]);
+  showPayGate();
+}
+
+// ── PAY GATE ──────────────────────────────────
+function showPayGate() {
+  document.getElementById('pay-gate').classList.add('open');
+  document.getElementById('pg-code-input').value = '';
+  document.getElementById('pg-code-err').textContent = '';
+}
+
+function closePayGate() {
+  document.getElementById('pay-gate').classList.remove('open');
+}
+
+function switchPayTab(tab, btn) {
+  document.querySelectorAll('.pg-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.pg-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('pp-' + tab).classList.add('active');
+  document.getElementById('pg-code-err').textContent = '';
+}
+
+async function verifyCode() {
+  const val   = document.getElementById('pg-code-input').value.trim().toUpperCase();
+  const errEl = document.getElementById('pg-code-err');
+  const btn   = document.querySelector('.pg-btn');
+  errEl.textContent = '';
+  
+  // Local emergency bypass for cafe staff in case of internet outage
+  if (val === 'QCTTX2025' || val === 'NCTTX2025' || val === 'PP000') {
+    S.unlocked = true;
+    closePayGate();
+    composeAndShow();
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Đang kiểm tra...';
+  try {
+    const res   = await fetch(`${DB_URL}/codes/${val}.json`);
+    const entry = await res.json();
+    if (!entry)       { errEl.textContent = 'Mã không đúng. Vui lòng thử lại.'; return; }
+    if (entry.used)   { errEl.textContent = 'Mã này đã được sử dụng rồi.'; return; }
+    await fetch(`${DB_URL}/codes/${val}.json`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ used: true, usedAt: Date.now() })
+    });
+    S.unlocked = true;
+    closePayGate();
+    composeAndShow();
+  } catch(e) {
+    errEl.textContent = 'Lỗi kết nối. Vui lòng thử lại.';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Xác nhận';
+  }
+}
+
+function confirmPaid() {
+  S.unlocked = true;
+  closePayGate();
+  composeAndShow();
+}
+
+// ── HELPERS ───────────────────────────────────
+function loadImg(src){return new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=src;})}
+function delay(ms){return new Promise(r=>setTimeout(r,ms))}
+function toBlob(dataURL){const[h,d]=dataURL.split(','),mime=h.match(/:(.*?);/)[1],bytes=atob(d),arr=new Uint8Array(bytes.length);for(let i=0;i<bytes.length;i++)arr[i]=bytes.charCodeAt(i);return new Blob([arr],{type:mime})}
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2800)}
+
+/* ═══════════════════════════════════════════════
+   QR & CLOUD UPLOAD FUNCTIONS
+═══════════════════════════════════════════════ */
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) return resolve();
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+}
+
+function setupCloudURL() {
+  const qrEnabled = localStorage.getItem('pb_qr_enabled') === 'true';
+  const provider = localStorage.getItem('pb_cloud_provider') || 'none';
+  const redirectUrl = localStorage.getItem('pb_redirect_url') || '';
+  
+  if (!qrEnabled || provider === 'none') {
+    S.currentPhotoId = null;
+    S.currentCloudURL = null;
+    return;
+  }
+  
+  S.currentPhotoId = 'QCTTX_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7).toUpperCase();
+  
+  let directURL = '';
+  if (provider === 'cloudinary') {
+    const cloudName = localStorage.getItem('pb_cloudinary_cloud_name') || '';
+    if (cloudName) {
+      directURL = `https://res.cloudinary.com/${cloudName}/image/upload/${S.currentPhotoId}.jpg`;
+      if (redirectUrl) {
+        S.currentCloudURL = `${redirectUrl}?p=c&c=${cloudName}&id=${S.currentPhotoId}`;
+      } else {
+        S.currentCloudURL = directURL;
+      }
+    }
+  } else if (provider === 'firebase') {
+    const bucket = localStorage.getItem('pb_firebase_bucket') || '';
+    if (bucket) {
+      directURL = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/photos%2F${S.currentPhotoId}.jpg?alt=media`;
+      if (redirectUrl) {
+        S.currentCloudURL = `${redirectUrl}?p=f&b=${bucket}&id=${S.currentPhotoId}`;
+      } else {
+        S.currentCloudURL = directURL;
+      }
+    }
+  }
+}
+
+async function drawQRCodeOnCanvas(ctx, url, canvasW, canvasH) {
+  try {
+    if (typeof QRious === 'undefined') {
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js');
+    }
+    
+    const qrSize = Math.max(120, Math.round(canvasW * 0.12));
+    const padding = Math.round(qrSize * 0.08);
+    const margin = Math.round(canvasW * 0.02);
+    
+    const qr = new QRious({
+      value: url,
+      size: qrSize,
+      background: 'white',
+      foreground: 'black',
+      level: 'M'
+    });
+    
+    const qrImg = await loadImg(qr.toDataURL());
+    if (qrImg) {
+      const qrPos = localStorage.getItem('pb_qr_position') || 'bottom-right';
+      let x, y;
+      const totalSize = qrSize + padding * 2;
+      
+      if (qrPos === 'bottom-left') {
+        x = margin;
+        y = canvasH - totalSize - margin;
+      } else if (qrPos === 'top-right') {
+        x = canvasW - totalSize - margin;
+        y = margin;
+      } else if (qrPos === 'top-left') {
+        x = margin;
+        y = margin;
+      } else {
+        x = canvasW - totalSize - margin;
+        y = canvasH - totalSize - margin;
+      }
+      
+      ctx.save();
+      ctx.fillStyle = '#FFFFFF';
+      ctx.shadowColor = 'rgba(0,0,0,0.15)';
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetY = 4;
+      
+      const R = Math.round(qrSize * 0.08);
+      ctx.beginPath();
+      ctx.moveTo(x + R, y);
+      ctx.lineTo(x + totalSize - R, y);
+      ctx.quadraticCurveTo(x + totalSize, y, x + totalSize, y + R);
+      ctx.lineTo(x + totalSize, y + totalSize - R);
+      ctx.quadraticCurveTo(x + totalSize, y + totalSize, x + totalSize - R, y + totalSize);
+      ctx.lineTo(x + R, y + totalSize);
+      ctx.quadraticCurveTo(x, y + totalSize, x, y + totalSize - R);
+      ctx.lineTo(x, y + R);
+      ctx.quadraticCurveTo(x, y, x + R, y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+      
+      ctx.drawImage(qrImg, x + padding, y + padding);
+    }
+  } catch (e) {
+    console.error('Error drawing QR code:', e);
+  }
+}
+
+async function uploadPhotoToCloud() {
+  const qrEnabled = localStorage.getItem('pb_qr_enabled') === 'true';
+  const provider = localStorage.getItem('pb_cloud_provider') || 'none';
+  
+  if (!qrEnabled || provider === 'none' || !S.currentPhotoId || !S.finalURL) {
+    return;
+  }
+  
+  updateCloudStatus('uploading');
+  
+  try {
+    if (provider === 'cloudinary') {
+      const cloudName = localStorage.getItem('pb_cloudinary_cloud_name') || '';
+      const preset = localStorage.getItem('pb_cloudinary_preset') || '';
+      
+      const formData = new FormData();
+      formData.append('file', S.finalURL);
+      formData.append('upload_preset', preset);
+      formData.append('public_id', S.currentPhotoId);
+      
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (res.ok && data.secure_url) {
+        console.log('Upload success Cloudinary:', data.secure_url);
+        updateCloudStatus('success');
+      } else {
+        console.error('Upload error Cloudinary:', data);
+        updateCloudStatus('error', data.error ? data.error.message : 'Lỗi không xác định');
+      }
+    } else if (provider === 'firebase') {
+      const bucket = localStorage.getItem('pb_firebase_bucket') || '';
+      const blob = toBlob(S.finalURL);
+      
+      const res = await fetch(`https://firebasestorage.googleapis.com/v0/b/${bucket}/o/photos%2F${S.currentPhotoId}.jpg`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'image/jpeg' },
+        body: blob
+      });
+      const data = await res.json();
+      if (res.ok) {
+        console.log('Upload success Firebase Storage');
+        updateCloudStatus('success');
+      } else {
+        console.error('Upload error Firebase:', data);
+        updateCloudStatus('error', data.error ? data.error.message : 'Lỗi không xác định');
+      }
+    }
+  } catch (e) {
+    console.error('Upload catch error:', e);
+    updateCloudStatus('error', e.message);
+  }
+}
+
+function updateCloudStatus(status, errMsg = '') {
+  const badge = document.getElementById('cloud-status-badge');
+  const icon = document.getElementById('cloud-status-icon');
+  const text = document.getElementById('cloud-status-text');
+  
+  if (!badge) return;
+  
+  const qrEnabled = localStorage.getItem('pb_qr_enabled') === 'true';
+  const provider = localStorage.getItem('pb_cloud_provider') || 'none';
+  if (!qrEnabled || provider === 'none') {
+    badge.style.display = 'none';
+    return;
+  }
+  
+  badge.style.display = 'flex';
+  
+  if (status === 'uploading') {
+    icon.textContent = '☁';
+    icon.style.animation = 'pulse 1.5s infinite';
+    text.textContent = 'Đang lưu ảnh trực tuyến...';
+    badge.style.background = 'rgba(0,0,0,0.65)';
+    badge.style.color = '#FFFFFF';
+  } else if (status === 'success') {
+    icon.textContent = '✓';
+    icon.style.animation = 'none';
+    text.textContent = 'Đã lưu trực tuyến (Sẵn sàng quét)';
+    badge.style.background = 'rgba(27,67,50,0.85)';
+    badge.style.color = '#52B788';
+    setTimeout(() => {
+      badge.style.display = 'none';
+    }, 4000);
+  } else if (status === 'error') {
+    icon.textContent = '⚠️';
+    icon.style.animation = 'none';
+    text.textContent = 'Không thể lưu lên mây: ' + (errMsg || 'Lỗi mạng');
+    badge.style.background = 'rgba(192,57,43,0.85)';
+    badge.style.color = '#FFD2D2';
+  }
+}
+
+</script>
+
+<!-- ══ PAY GATE OVERLAY ═════════════════════════ -->
+<div id="pay-gate">
+  <div class="pg-box-wrap">
+    <button class="pg-close" onclick="closePayGate()">✕</button>
+    <div class="pg-box">
+      <div class="pg-title">Nhập mã để nhận ảnh</div>
+      <div class="pg-sub">Vui lòng nhập mã được cung cấp</div>
+      <div class="pg-panel active" id="pp-code">
+        <input class="pg-input" id="pg-code-input" type="text" placeholder="Nhập mã tại đây" maxlength="20"
+          oninput="this.value=this.value.toUpperCase();document.getElementById('pg-code-err').textContent=''"
+          onkeydown="if(event.key==='Enter')verifyCode()">
+        <div class="pg-err" id="pg-code-err"></div>
+        <button class="pg-btn" onclick="verifyCode()">Xác nhận</button>
+        <div class="pg-note">Hãy liên hệ <strong>"KHU VỰC TÍNH TIỀN"</strong> của Nhà để có được mã chụp ảnh. Xin cảm ơn</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

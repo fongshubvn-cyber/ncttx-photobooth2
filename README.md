@@ -1,1 +1,1 @@
-# ncttx-photobooth2
+# photobooth
